@@ -137,14 +137,16 @@ impl AdaptiveConfig {
             backoff_factor: 2,
 
             // CDX is the most fragile surface (documented limits and escalating penalties).
-            // Default back to the PR-era floor to reduce risk of long penalty buckets.
+            // Keep a relatively slow minimum interval (1200ms) to reduce the risk of
+            // triggering long penalty buckets in hostile environments.
             cdx_min_interval: Duration::from_millis(1200),
             cdx_initial_interval: Duration::from_millis(1500),
             cdx_max_interval: Duration::from_secs(30),
 
             // Content is separate; still conservative by default.
-            // Slightly faster than the PR-era floor. With bounded concurrency, we can
-            // take a modest speedup without pushing per-request spacing too low.
+            // Content can usually tolerate a bit more throughput, but pushing the per-request
+            // spacing too low tends to surface timeouts (especially once we enable bounded
+            // concurrency in report mode). Use a moderate floor of 600ms as a balance.
             content_min_interval: Duration::from_millis(600),
             content_initial_interval: Duration::from_millis(1500),
             content_max_interval: Duration::from_secs(20),
